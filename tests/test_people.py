@@ -1,9 +1,11 @@
 import pytest
 from utils.people import Person, Plan
+import random
 
 @pytest.fixture
 def test_people():
     # Create test Person objects
+
     person1 = Person(name="Alice", birth_year=1980)
     person1.set_retirement_age(65)
     person1.set_income(1)
@@ -14,7 +16,7 @@ def test_people():
     
     return [person1, person2]
 
-@pytest.fixture
+@pytest.fixture(scope = 'function')
 def test_plan(test_people): 
     # Create a Plan object
     plan = Plan(
@@ -46,3 +48,33 @@ def test_calculate_incomes(test_plan):
             incomes.append([test_plan.current_year + i, 1 * (2**i)])
         expected_incomes[person.name] = incomes
     assert expected_incomes == test_plan.calculate_incomes()
+
+def test_calculate_incomes_rand(test_plan):
+    names = [
+        "Amina", "Bao", "Chidi", "Diego", "Elif",
+        "Farah", "Gautam", "Hana", "Ibrahim", "Jasmin"
+    ]
+
+    birth_years = [1960, 1975, 1988, 1990, 1955, 1980, 1970, 1995, 1965, 2000]
+    retirement_years = [2025, 2035, 2045, 2040, 2020, 2040, 2035, 2060, 2030, 2065]
+    incomes = [50_000, 60_000, 45_000, 80_000, 30_000, 70_000, 65_000, 40_000, 90_000, 55_000]
+
+    expected = {}
+
+    for name, by, ry, income in zip(names, birth_years, retirement_years, incomes):
+        p = Person(name, by)
+        p.set_retirement_age(ry)
+        p.set_income(income)
+        test_plan.people.append(p)
+
+        years = ry - test_plan.current_year
+        expected[name] = round(
+            income * test_plan.inc_growth_factor ** years,
+            2
+        )
+    actual = {}
+    output = test_plan.calculate_incomes()
+    for name, list in output.items():
+        actual[name] = list[-1][1]
+    
+    assert actual == expected
