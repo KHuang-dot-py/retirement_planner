@@ -1,16 +1,16 @@
 import pytest
-from utils.people import Person, Plan
-import random
+from utils.people import Person
+from utils.plan import Plan
 
 @pytest.fixture
 def test_people():
     # Create test Person objects
 
-    person1 = Person(name="Alice", birth_year=1980)
+    person1 = Person(name="Alice", birth_year=1980, income = 1)
     person1.set_retirement_age(65)
     person1.set_income(1)
     
-    person2 = Person(name="Bob", birth_year=1990)
+    person2 = Person(name="Bob", birth_year=1990, income = 1)
     person2.set_retirement_age(70)
     person2.set_income(1)
     
@@ -61,10 +61,9 @@ def test_calculate_incomes_rand(test_plan):
 
     expected = {}
 
-    for name, by, ry, income in zip(names, birth_years, retirement_years, incomes):
-        p = Person(name, by)
-        p.set_retirement_age(ry)
-        p.set_income(income)
+    for name, by, ry, income in zip(names, birth_years, retirement_years, incomes, strict = False):
+        p = Person(name, by, income)
+        p.set_retirement_age(ry - by)
         test_plan.people.append(p)
 
         years = ry - test_plan.current_year
